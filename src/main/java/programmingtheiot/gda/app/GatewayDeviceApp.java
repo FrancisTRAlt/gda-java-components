@@ -51,7 +51,11 @@ public class GatewayDeviceApp
 		
 		_Logger.info("Initializing GDA...");
 	}
-	
+
+	public GatewayDeviceApp(String[] args)
+	{
+		parseArgs(args);
+	}
 	
 	// static
 	
@@ -180,6 +184,13 @@ public class GatewayDeviceApp
 	
 	
 	// private methods
-	
+	private void initConfig(String fileName){
+		_Logger.info("initConfig not exist yet");
+	}
+
+	// private void parseArgs(String[] args){
+	// 	initConfig(null);
+	// 	_Logger.info("parseArgs not exist yet");
+	// }
 
 }
