@@ -54,6 +54,8 @@ public class GatewayDeviceApp
 		super();
 		
 		_Logger.info("Initializing GDA...");
+
+		this.sysPerfMgr = new SystemPerformanceManager();
 	}
 
 	public GatewayDeviceApp(String[] args)
@@ -99,7 +101,13 @@ public class GatewayDeviceApp
 	{
 		_Logger.info("Starting GDA...");
 		try{
+			if (this.sysPerfMgr.startManager()) {
 			_Logger.info("GDA started successfully.");
+		} else {
+			_Logger.warning("Failed to start system performance manager!");
+			
+			stopApp(-1);
+		}
 		}catch(Exception e){
 			_Logger.info(""+e);
 			stopApp(-1);
@@ -114,7 +122,11 @@ public class GatewayDeviceApp
 	public void stopApp(int code)
 	{
 		try{
-			_Logger.info("Stopped GDA...");
+			if (this.sysPerfMgr.stopManager()) {
+			_Logger.log(Level.INFO, "GDA stopped successfully with exit code {0}.", code);
+		} else {
+			_Logger.warning("Failed to stop system performance manager!");
+		}
 		}catch(Exception e){
 			_Logger.info(""+e);
 		}
