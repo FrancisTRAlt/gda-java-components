@@ -224,5 +224,11 @@ public class DeviceDataManager implements IDataMessageListener
 			// TODO: implement this as an optional exercise in Lab Module 5
 		}
 	}
+
+	@Override
+	public boolean handleActuatorCommandRequest(ResourceNameEnum resourceName, ActuatorData data) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'handleActuatorCommandRequest'");
+	}
 	
 }
