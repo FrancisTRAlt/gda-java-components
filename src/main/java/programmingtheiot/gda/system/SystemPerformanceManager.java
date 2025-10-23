@@ -84,7 +84,7 @@ public class SystemPerformanceManager
 		float memUtil = this.sysMemUtilTask.getTelemetryValue();
 		
 		// TODO: change the log level to 'info' for testing purposes
-		_Logger.fine("CPU utilization: " + cpuUtil + ", Mem utilization: " + memUtil);
+		_Logger.info("CPU utilization: " + cpuUtil + ", Mem utilization: " + memUtil);
 		
 		SystemPerformanceData spd = new SystemPerformanceData();
 		spd.setLocationID(this.locationID);
