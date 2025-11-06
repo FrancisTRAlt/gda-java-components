@@ -170,6 +170,42 @@ public class CoapClientConnector implements IRequestResponseClient
 	@Override
 	public boolean sendPutRequest(ResourceNameEnum resource, String name, boolean enableCON, String payload, int timeout)
 	{
+		CoapResponse response = null;
+
+		if (enableCON) {
+			this.clientConn.useCONs();
+		} else {
+			this.clientConn.useNONs();
+		}
+
+		this.clientConn.setURI(this.serverAddr + "/" + resource.getResourceName());
+
+		// TODO: determine which MediaTypeRegistry const should be used for this call
+		try {
+			response = this.clientConn.put(payload, MediaTypeRegistry.TEXT_PLAIN);
+		} catch (ConnectorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (response != null) {
+			// TODO: implement your logic here
+			
+			_Logger.info("Handling PUT. Response: " + response.isSuccess() + " - " + response.getOptions() + " - " +
+				response.getCode() + " - " + response.getResponseText());
+			
+			if (this.dataMsgListener != null) {
+				// TODO: implement this
+			}
+			
+			return true;
+		} else {
+			_Logger.warning("Handling PUT. No response received.");
+		}
+
 		return false;
 	}
 
