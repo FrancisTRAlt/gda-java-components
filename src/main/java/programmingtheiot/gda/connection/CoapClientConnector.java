@@ -124,6 +124,40 @@ public class CoapClientConnector implements IRequestResponseClient
 	@Override
 	public boolean sendGetRequest(ResourceNameEnum resource, String name, boolean enableCON, int timeout)
 	{
+		CoapResponse response = null;
+
+		if (enableCON) {
+			this.clientConn.useCONs();
+		} else {
+			this.clientConn.useNONs();
+		}
+
+		this.clientConn.setURI(this.serverAddr + "/" + resource.getResourceName());
+		try {
+			response = this.clientConn.get();
+		} catch (ConnectorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (response != null) {
+			// TODO: implement your logic here
+			
+			_Logger.info("Handling GET. Response: " + response.isSuccess() + " - " + response.getOptions() + " - " +
+				response.getCode() + " - " + response.getResponseText());
+			
+			if (this.dataMsgListener != null) {
+				// TODO: implement this
+			}
+			
+			return true;
+		} else {
+			_Logger.warning("Handling GET. No response received.");
+		}
+
 		return false;
 	}
 
