@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.WebLink;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
@@ -296,7 +297,24 @@ public class CoapClientConnector implements IRequestResponseClient
 	@Override
 	public boolean startObserver(ResourceNameEnum resource, String name, int ttl)
 	{
-		return false;
+		String uriPath = createUriPath(resource, name);
+		
+		_Logger.info("Observing resource [START]: " + uriPath);
+		
+		this.clientConn.setURI(uriPath);
+		
+		// TODO: Check the resource type:
+		//   - If it references SensorData, create the SensorDataObserverHandler
+		//   - If it references SystemPerformanceData, create the SystemPerformanceDataObserverHandler
+		SensorDataObserverHandler handler = new SensorDataObserverHandler();
+		handler.setDataMessageListener(this.dataMsgListener);
+		
+		CoapObserveRelation cor = this.clientConn.observe(handler);
+		
+		// TODO: store a reference to the relation instance and map it to the resource under observation,
+		// as it will be needed if the caller wants to cancel the observation at a later time
+		
+		return (! cor.isCanceled());
 	}
 
 	@Override
