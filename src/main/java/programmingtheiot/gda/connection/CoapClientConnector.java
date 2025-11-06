@@ -11,6 +11,7 @@
 
 package programmingtheiot.gda.connection;
 
+import java.io.IOException;
 import java.lang.module.Configuration;
 import java.util.Set;
 import java.util.logging.Level;
@@ -22,6 +23,7 @@ import org.eclipse.californium.core.WebLink;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.config.CoapConfig;
 import org.eclipse.californium.elements.config.UdpConfig;
+import org.eclipse.californium.elements.exception.ConnectorException;
 
 import programmingtheiot.common.ConfigConst;
 import programmingtheiot.common.ConfigUtil;
@@ -94,6 +96,22 @@ public class CoapClientConnector implements IRequestResponseClient
 	@Override
 	public boolean sendDiscoveryRequest(int timeout)
 	{
+		Set<WebLink> wlSet = null;
+		try {
+			wlSet = this.clientConn.discover();
+		} catch (ConnectorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (wlSet != null) {
+			for (WebLink wl : wlSet) {
+				_Logger.info(" --> URI: " + wl.getURI() + ". Attributes: " + wl.getAttributes());
+			}
+		}
 		return false;
 	}
 
