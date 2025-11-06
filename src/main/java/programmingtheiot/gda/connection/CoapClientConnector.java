@@ -164,6 +164,42 @@ public class CoapClientConnector implements IRequestResponseClient
 	@Override
 	public boolean sendPostRequest(ResourceNameEnum resource, String name, boolean enableCON, String payload, int timeout)
 	{
+		CoapResponse response = null;
+
+		if (enableCON) {
+			this.clientConn.useCONs();
+		} else {
+			this.clientConn.useNONs();
+		}
+
+		this.clientConn.setURI(this.serverAddr + "/" + resource.getResourceName());
+
+		// TODO: determine which MediaTypeRegistry const should be used for this call
+		try {
+			response = this.clientConn.post(payload, MediaTypeRegistry.TEXT_PLAIN);
+		} catch (ConnectorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (response != null) {
+			// TODO: implement your logic here
+			
+			_Logger.info("Handling POST. Response: " + response.isSuccess() + " - " + response.getOptions() + " - " +
+				response.getCode() + " - " + response.getResponseText());
+			
+			if (this.dataMsgListener != null) {
+				// TODO: implement this
+			}
+			
+			return true;
+		} else {
+			_Logger.warning("Handling POST. No response received.");
+		}
+
 		return false;
 	}
 
