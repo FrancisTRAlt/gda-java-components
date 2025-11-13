@@ -21,6 +21,8 @@ import javax.net.ssl.SSLSocketFactory;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 
 import programmingtheiot.common.SimpleCertManagementUtil;
+import programmingtheiot.data.ActuatorData;
+import programmingtheiot.data.DataUtil;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
@@ -85,26 +87,35 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	
 	
 	// public methods
-	
+
 	@Override
 	public boolean connectClient()
 	{
 		try {
 			if (this.mqttClient == null) {
-				this.mqttClient = new MqttClient(this.brokerAddr, this.clientID, this.persistence);
+				// NOTE: MQTT client updated to use async client vs sync client
+				this.mqttClient = new MqttAsyncClient(this.brokerAddr, this.clientID, this.persistence);
+	//			this.mqttClient = new MqttClient(this.brokerAddr, this.clientID, this.persistence);
+				
 				this.mqttClient.setCallback(this);
 			}
 			
 			if (! this.mqttClient.isConnected()) {
 				_Logger.info("MQTT client connecting to broker: " + this.brokerAddr);
+				
 				this.mqttClient.connect(this.connOpts);
+				
+				// NOTE: When using the async client, returning 'true' here doesn't mean
+				// the client is actually connected - yet. Use the connectComplete() callback
+				// to determine result of connectClient().
 				return true;
 			} else {
 				_Logger.warning("MQTT client already connected to broker: " + this.brokerAddr);
 			}
 		} catch (MqttException e) {
 			// TODO: handle this exception
-			_Logger.log(Level.SEVERE, "Failed to connect MQTT client to broker.", e);
+			
+			_Logger.log(Level.SEVERE, "Failed to connect MQTT client to broker: " + this.brokerAddr, e);
 		}
 		
 		return false;
@@ -227,11 +238,39 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 	}
 	
 	// callbacks
-	
+
 	@Override
 	public void connectComplete(boolean reconnect, String serverURI)
 	{
 		_Logger.info("MQTT connection successful (is reconnect = " + reconnect + "). Broker: " + serverURI);
+		
+		int qos = 1;
+		
+		// Option 2
+		try {
+			_Logger.info("Subscribing to topic: " + ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE.getResourceName());
+				
+			this.mqttClient.subscribe(
+				ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE.getResourceName(),
+				qos,
+				new ActuatorResponseMessageListener(ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE, this.dataMsgListener));
+
+			_Logger.info("Subscribing to topic: " + ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE.getResourceName());
+			
+			this.subscribeToTopic(
+				ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE.getResourceName(),
+				qos,
+				new SensorDataMessageListener(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, this.dataMsgListener));
+			
+			_Logger.info("Subscribing to topic: " + ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE.getResourceName());
+			
+			this.subscribeToTopic(
+				ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE.getResourceName(),
+				qos,
+				new SystemPerformanceDataMessageListener(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, this.dataMsgListener));
+		} catch (MqttException e) {
+			_Logger.warning("Failed to subscribe to CDA actuator response topic.");
+		}
 	}
 
 	@Override
@@ -405,5 +444,92 @@ public class MqttClientConnector implements IPubSubClient, MqttCallbackExtended
 			
 			this.enableEncryption = false;
 		}
+	}
+
+	private class ActuatorResponseMessageListener implements IMqttMessageListener
+	{
+		private ResourceNameEnum resource = null;
+		private IDataMessageListener dataMsgListener = null;
+		
+		ActuatorResponseMessageListener(ResourceNameEnum resource, IDataMessageListener dataMsgListener)
+		{
+			this.resource = resource;
+			this.dataMsgListener = dataMsgListener;
+		}
+		
+		@Override
+		public void messageArrived(String topic, MqttMessage message) throws Exception
+		{
+			try {
+				ActuatorData actuatorData =
+					DataUtil.getInstance().jsonToActuatorData(new String(message.getPayload()));
+				
+				// optionally, log a message indicating data was received
+				_Logger.info("Received ActuatorData response: " + actuatorData.getValue());
+					
+
+				if (this.dataMsgListener != null) {
+					this.dataMsgListener.handleActuatorCommandResponse(resource, actuatorData);
+				}
+			} catch (Exception e) {
+				_Logger.warning("Failed to convert message payload to ActuatorData.");
+			}
+		}
+		
+	}
+
+
+	private class SensorDataMessageListener implements IMqttMessageListener
+	{
+		private ResourceNameEnum resource = null;
+		private IDataMessageListener dataMsgListener = null;
+		
+		SensorDataMessageListener(ResourceNameEnum resource, IDataMessageListener dataMsgListener)
+		{
+			this.resource = resource;
+			this.dataMsgListener = dataMsgListener;
+		}
+		
+		@Override
+		public void messageArrived(String topic, MqttMessage message) throws Exception
+		{
+			try {
+				// TODO: Extract the payload and convert the JSON to SensorData
+				
+				// optionally, log a message indicating data was received
+
+				// TODO: invoke the dataMsgListener's callback to handle
+				// incoming SensorData messages
+			} catch (Exception e) {
+				// TODO: handle any Exception that may be thrown
+			}
+		}	
+	}
+
+	private class SystemPerformanceDataMessageListener implements IMqttMessageListener
+	{
+		private ResourceNameEnum resource = null;
+		private IDataMessageListener dataMsgListener = null;
+		
+		SystemPerformanceDataMessageListener(ResourceNameEnum resource, IDataMessageListener dataMsgListener)
+		{
+			this.resource = resource;
+			this.dataMsgListener = dataMsgListener;
+		}
+		
+		@Override
+		public void messageArrived(String topic, MqttMessage message) throws Exception
+		{
+			try {
+				// TODO: Extract the payload and convert the JSON to SystemPerformanceData
+				
+				// optionally, log a message indicating data was received
+
+				// TODO: invoke the dataMsgListener's callback to handle
+				// incoming SystemPerformanceData messages
+			} catch (Exception e) {
+				// TODO: handle any Exception that may be thrown
+			}
+		}	
 	}
 }

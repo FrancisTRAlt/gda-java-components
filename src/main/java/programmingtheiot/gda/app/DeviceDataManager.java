@@ -183,31 +183,34 @@ public class DeviceDataManager implements IDataMessageListener
 			if (this.mqttClient.connectClient()) {
 				_Logger.info("Successfully connected MQTT client to broker.");
 				
-				// add necessary subscriptions
-				
 				// TODO: read this from the configuration file
-				int qos = ConfigConst.DEFAULT_QOS;
+				//int qos = ConfigConst.DEFAULT_QOS;
 				
 				// TODO: check the return value for each and take appropriate action
 				
 				// IMPORTANT NOTE: The 'subscribeToTopic()' method calls shown
 				// below will be moved to MqttClientConnector.connectComplete()
 				// in Lab Module 10. For now, they can remain here.
-				this.mqttClient.subscribeToTopic(ResourceNameEnum.GDA_MGMT_STATUS_MSG_RESOURCE, qos);
-				this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE, qos);
-				this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, qos);
-				this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, qos);
+				//this.mqttClient.subscribeToTopic(ResourceNameEnum.GDA_MGMT_STATUS_MSG_RESOURCE, qos);
+				//this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_ACTUATOR_RESPONSE_RESOURCE, qos);
+				//this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, qos);
+				//this.mqttClient.subscribeToTopic(ResourceNameEnum.CDA_SYSTEM_PERF_MSG_RESOURCE, qos);
 			} else {
 				_Logger.severe("Failed to connect MQTT client to broker.");
 				
 				// TODO: take appropriate action
 			}
-			if (this.enableCoapServer && this.coapServer != null) {
-				if (this.coapServer.startServer()) {
-					_Logger.info("CoAP server started.");
-				} else {
-					_Logger.severe("Failed to start CoAP server. Check log file for details.");
-				}
+		}
+		
+		// TODO: Other calls may need to be included, such as starting
+		// the CoAP client instead of the CoAP server, depending on
+		// your configuration settings
+		
+		if (this.enableCoapServer && this.coapServer != null) {
+			if (this.coapServer.startServer()) {
+				_Logger.info("CoAP server started.");
+			} else {
+				_Logger.severe("Failed to start CoAP server. Check log file for details.");
 			}
 		}
 		
