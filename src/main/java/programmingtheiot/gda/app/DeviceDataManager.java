@@ -196,6 +196,8 @@ public class DeviceDataManager implements IDataMessageListener
 			// TODO: retrieve this from config file
 			int qos = ConfigConst.DEFAULT_QOS;
 			
+			// NOTE: Your code may not have a persistenceClient reference or
+			// a enablePersistenceClient boolean
 			if (this.enablePersistenceClient && this.persistenceClient != null) {
 				this.persistenceClient.storeData(resourceName.getResourceName(), qos, data);
 			}
@@ -219,6 +221,15 @@ public class DeviceDataManager implements IDataMessageListener
 			if (data.hasError()) {
 				_Logger.warning("Error flag set for SystemPerformanceData instance.");
 			}
+			
+			// TODO: retrieve this from config file
+			int qos = ConfigConst.DEFAULT_QOS;
+			
+			// NOTE: You may want to persist your SystemPerformanceData here
+			
+			// NOTE: You may want to also analyze the SystemPerformanceData here
+			
+			this.handleUpstreamTransmission(resourceName, jsonData, qos);
 			
 			return true;
 		} else {
@@ -361,15 +372,47 @@ public class DeviceDataManager implements IDataMessageListener
 	}
 
 	@Override
-	public boolean handleActuatorCommandRequest(ResourceNameEnum resourceName, ActuatorData data) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'handleActuatorCommandRequest'");
+	public boolean handleActuatorCommandRequest(ResourceNameEnum resourceName, ActuatorData data)
+	{
+		if (data != null) {
+			// NOTE: Feel free to update this log message for debugging and monitoring
+			_Logger.log(
+				Level.FINE,
+				"Actuator request received: {0}. Message: {1}",
+				new Object[] {resourceName.getResourceName(), Integer.valueOf((data.getCommand()))});
+			
+			if (data.hasError()) {
+				_Logger.warning("Error flag set for ActuatorData instance.");
+			}
+			
+			// TODO: retrieve this from config file
+			int qos = ConfigConst.DEFAULT_QOS;
+			
+			// TODO: you may want to implement some analysis logic here or
+			// in a separate method to determine how best to handle incoming
+			// ActuatorData before calling this.sendActuatorCommandtoCda()
+			
+			// Recall that this private method was implement in Lab Module 10
+			// See PIOT-GDA-10-003 for details
+			this.sendActuatorCommandtoCda(resourceName, data);
+			
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	private void handleUpstreamTransmission(ResourceNameEnum resource, String jsonData, int qos)
 	{
-		// NOTE: This will be implemented in Part 04
-		_Logger.info("TODO: Send JSON data to cloud service: " + resource);
+		// TODO: feel free to change the logging levels for debugging and monitoring
+		_Logger.fine("Sending JSON data to cloud service: " + resource);
+		
+		if (this.cloudClient != null) {
+			// TODO: handle any failures
+			if (this.cloudClient.sendEdgeDataToCloud(resourceName, data)) {
+				_Logger.fine("Sent JSON data upstream to CSP.");
+			}
+		}
 	}
 
 
