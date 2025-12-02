@@ -15,6 +15,8 @@ package programmingtheiot.gda.connection;
  */
 public interface IConnectionListener
 {
+	// TODO: place this in the class-scoped variable declarations section
+	private IConnectionListener connListener = null;
 	/**
 	 * Callback to be invoked after successful connection.
 	 * 

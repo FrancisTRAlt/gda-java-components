@@ -83,4 +83,30 @@ public interface ICloudClient
 	 * @return bool True on success (if listener is non-null will always be the case), False otherwise.
 	 */
 	public boolean setDataMessageListener(IDataMessageListener listener); 
+
+	public String actuatorDataToTimeAndValueJson(ActuatorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			Gson gson = new Gson();
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = gson.toJson(tvData);
+		}
+
+		return jsonData;
+	}
+
+	public String sensorDataToTimeAndValueJson(SensorData data)
+	{
+		String jsonData = null;
+		
+		if (data != null) {
+			Gson gson = new Gson();
+			TimeAndValuePayloadData tvData = new TimeAndValuePayloadData(data);
+			jsonData = gson.toJson(tvData);
+		}
+
+		return jsonData;
+	}
 }
